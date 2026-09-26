@@ -1,0 +1,3 @@
+ssh pi@pi410 pasword raspberry
+remote folder is:
+/home/pi/Desktop/humidifier
