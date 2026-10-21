@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Humidifier Control</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2.7s5.5 5.9 5.5 9.7a5.5 5.5 0 0 1-11 0c0-3.8 5.5-9.7 5.5-9.7Z"/>
+            <path d="M9.4 14.2a2.6 2.6 0 0 0 2.6 2.6"/>
+          </svg>
+        </span>
+        <div class="brand-text">
+          <h1>Humidifier</h1>
+          <span class="brand-sub">Raspberry Pi control panel</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <span id="link-status" class="link-status offline" title="Connection to the service">
+          <span class="dot"></span><span id="link-text">connecting</span>
+        </span>
+        <span id="device-pill" class="pill pill-idle">unknown</span>
+        <span id="clock" class="clock">--:--:--</span>
+      </div>
+    </header>
+
+    <main class="grid">
+      <section class="card card-schedule">
+        <div class="card-head">
+          <h2>Schedule</h2>
+          <label class="switch" title="Enable or disable the automatic schedule">
+            <input type="checkbox" id="enabled">
+            <span class="slider"></span>
+            <span class="switch-label" id="enabled-label">Disabled</span>
+          </label>
+        </div>
+
+        <div class="field">
+          <label for="duration">Operating duration</label>
+          <p class="hint">How long the humidifier runs each time it is switched on.</p>
+          <div class="input-row">
+            <input type="number" id="duration" min="1" max="1440" step="1" value="15">
+            <span class="unit">minutes</span>
+          </div>
+          <div class="chips" id="duration-chips">
+            <button type="button" class="chip" data-value="5">5</button>
+            <button type="button" class="chip" data-value="10">10</button>
+            <button type="button" class="chip" data-value="15">15</button>
+            <button type="button" class="chip" data-value="20">20</button>
+            <button type="button" class="chip" data-value="30">30</button>
+            <button type="button" class="chip" data-value="45">45</button>
+            <button type="button" class="chip" data-value="60">60</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="interval">Interval</label>
+          <p class="hint">How often the humidifier switches on automatically.</p>
+          <div class="input-row">
+            <input type="number" id="interval" min="1" max="1440" step="1" value="60">
+            <span class="unit">minutes</span>
+          </div>
+          <div class="chips" id="interval-chips">
+            <button type="button" class="chip" data-value="15">15m</button>
+            <button type="button" class="chip" data-value="30">30m</button>
+            <button type="button" class="chip" data-value="60">1h</button>
+            <button type="button" class="chip" data-value="120">2h</button>
+            <button type="button" class="chip" data-value="180">3h</button>
+            <button type="button" class="chip" data-value="240">4h</button>
+            <button type="button" class="chip" data-value="360">6h</button>
+            <button type="button" class="chip" data-value="720">12h</button>
+            <button type="button" class="chip" data-value="1440">24h</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="schedule-mode">Schedule mode</label>
+          <p class="hint">When the humidifier is switched on automatically.</p>
+          <div class="select-row">
+            <select id="schedule-mode">
+              <option value="hour">On full hours (e.g. 20:00)</option>
+              <option value="anchor">Starting at a fixed time</option>
+              <option value="interval">Interval after the last run</option>
+            </select>
+          </div>
+          <div class="input-row start-time-row hidden" id="start-time-row">
+            <input type="time" id="start-time" value="06:00">
+            <span class="unit">first run</span>
+          </div>
+          <p class="hint warning hidden" id="hour-warning">
+            Running on full hours needs an interval that is a whole number of hours.
+            Use a fixed start time instead.
+          </p>
+        </div>
+
+        <div class="field">
+          <label for="stage">Power stage</label>
+          <p class="hint">The humidifier remembers the stage that is active while it runs.</p>
+          <div class="select-row">
+            <select id="stage">
+              <option value="1">Stage 1 &ndash; highest</option>
+              <option value="2">Stage 2 &ndash; medium</option>
+              <option value="3">Stage 3 &ndash; lowest</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field field-inline">
+          <label class="check">
+            <input type="checkbox" id="run-on-start">
+            <span>Run immediately after a restart</span>
+          </label>
+          <label class="check">
+            <input type="checkbox" id="auth-enabled">
+            <span>Require a password to open this page</span>
+          </label>
+        </div>
+
+        <div class="field field-inline" id="auth-fields">
+          <div class="input-row">
+            <input type="text" id="auth-user" placeholder="User name" autocomplete="username">
+          </div>
+          <div class="input-row">
+            <input type="password" id="auth-password" placeholder="Password" autocomplete="new-password">
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="btn-save">Save settings</button>
+          <span id="save-state" class="save-state">saved</span>
+        </div>
+      </section>
+
+      <section class="card card-status">
+        <div class="card-head">
+          <h2>Status</h2>
+          <span id="stage-badge" class="pill pill-muted">idle</span>
+        </div>
+
+        <div class="countdown">
+          <span class="countdown-label">Next run in</span>
+          <span class="countdown-value" id="next-run">--:--:--</span>
+          <span class="countdown-time" id="next-run-at">no run scheduled</span>
+        </div>
+
+        <dl class="kv">
+          <div><dt>Humidifier</dt><dd id="humidifier-state">&ndash;</dd></div>
+          <div><dt>Active stage</dt><dd id="active-stage">&ndash;</dd></div>
+          <div><dt>Schedule</dt><dd id="schedule-mode-label">&ndash;</dd></div>
+          <div><dt>Next run</dt><dd id="next-run-at-short">&ndash;</dd></div>
+          <div><dt>Last run</dt><dd id="last-run">&ndash;</dd></div>
+          <div><dt>Last result</dt><dd id="last-result">&ndash;</dd></div>
+          <div><dt>Service uptime</dt><dd id="uptime">&ndash;</dd></div>
+          <div><dt>Config file</dt><dd id="config-file" class="mono">&ndash;</dd></div>
+        </dl>
+
+        <div class="actions actions-manual">
+          <button type="button" class="btn btn-accent" id="btn-start">Run now</button>
+          <button type="button" class="btn btn-danger" id="btn-stop">Turn off</button>
+        </div>
+        <p class="hint manual-hint">
+          &ldquo;Run now&rdquo; starts a cycle with the duration and stage that are currently shown.
+          &ldquo;Turn off&rdquo; stops a running cycle immediately.
+        </p>
+      </section>
+
+      <section class="card card-log">
+        <div class="card-head">
+          <h2>Activity</h2>
+          <button type="button" class="btn btn-ghost btn-small" id="btn-refresh-log">Refresh</button>
+        </div>
+        <ul class="log" id="log"></ul>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>Humidifier web interface</span>
+      <span id="footer-server">-</span>
+    </footer>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

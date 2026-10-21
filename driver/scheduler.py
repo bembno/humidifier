@@ -1,3 +1,10 @@
+"""Legacy scheduler.
+
+DEPRECATED: the scheduling is now done by the web service in
+``web/scheduler.py``.  This script must not run at the same time as the
+``humidifier-web`` service because both would control the GPIO pins.
+"""
+
 import time
 import os
 from datetime import datetime, timedelta

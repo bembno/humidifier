@@ -1,0 +1,24 @@
+[Unit]
+Description=Humidifier web interface and scheduler
+Documentation=file:/home/pi/Desktop/humidifier/web/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/Desktop/humidifier/web
+Environment=PYTHONUNBUFFERED=1
+Environment=HUMIDIFIER_HOST=127.0.0.1
+Environment=HUMIDIFIER_PORT=8080
+ExecStart=/home/pi/Desktop/humidifier/web/run.sh
+Restart=always
+RestartSec=5
+TimeoutStopSec=20
+KillSignal=SIGTERM
+StandardOutput=append:/home/pi/Desktop/humidifier/web/logs/service.log
+StandardError=append:/home/pi/Desktop/humidifier/web/logs/service.log
+
+[Install]
+WantedBy=multi-user.target
