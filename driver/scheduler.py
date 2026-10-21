@@ -54,7 +54,7 @@ def main() -> None:
                     log("Turning ON - highest stage")
                     h.set_stage_auto(1)
 
-                    time.sleep(15 * 60)
+                    time.sleep(10 * 60)
 
                     log("Turning OFF")
                     h.set_off()

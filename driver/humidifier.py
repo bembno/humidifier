@@ -15,6 +15,7 @@ class HumidifierDriver:
 
     def initialize(self) -> None:
         GPIO.setmode(GPIO.BCM)
+        GPIO.setwarnings(False)
         try:
             GPIO.setup(self.ENABLE_PIN, GPIO.OUT, initial=GPIO.HIGH)
             GPIO.setup(self.STATUS_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
